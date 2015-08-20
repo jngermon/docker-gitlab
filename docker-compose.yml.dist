@@ -1,8 +1,8 @@
 postgresql:
   image: sameersbn/postgresql:9.4-3
   environment:
-    - DB_USER=gitlab
-    - DB_PASS=password
+    - DB_USER={your_db_user}
+    - DB_PASS={tour_db_password}
     - DB_NAME=gitlabhq_production
   volumes:
     - /srv/docker/gitlab/postgresql:/var/lib/postgresql
@@ -11,25 +11,24 @@ gitlab:
   links:
     - redis:redisio
     - postgresql:postgresql
-  ports:
-    - "10080:80"
-    - "10022:22"
+    - postfix:mailer
   environment:
+    - VIRTUAL_HOST={your_sub_domain}
     - TZ=Asia/Kolkata
-    - SMTP_ENABLED=false
-    - SMTP_DOMAIN=www.example.com
-    - SMTP_HOST=smtp.gmail.com
-    - SMTP_PORT=587
-    - SMTP_USER=mailer@example.com
-    - SMTP_PASS=password
+    - SMTP_ENABLED=true
+    - SMTP_DOMAIN={your_sub_domain}
+    - SMTP_HOST=mailer
+    - SMTP_PORT=25
+    - SMTP_USER={your_smtp_user}@{your_domain}
+    - SMTP_PASS={your_smtp_password}
     - SMTP_STARTTLS=true
     - SMTP_AUTHENTICATION=login
     - GITLAB_TIMEZONE=Kolkata
-    - GITLAB_HOST=localhost
-    - GITLAB_PORT=10080
-    - GITLAB_SSH_PORT=10022
-    - GITLAB_EMAIL=admin@example.com
-    - GITLAB_EMAIL_REPLY_TO=noreply@example.com
+    - GITLAB_HOST={your_sub_domain}
+    - GITLAB_PORT=80
+    - GITLAB_SSH_PORT=22
+    - GITLAB_EMAIL=gitlab@{your_domain}
+    - GITLAB_EMAIL_REPLY_TO=noreply@{your_domain}
     - GITLAB_BACKUPS=daily
     - GITLAB_BACKUP_TIME=01:00
   volumes:
@@ -38,3 +37,10 @@ redis:
   image: sameersbn/redis:latest
   volumes:
     - /srv/docker/gitlab/redis:/var/lib/redis
+postfix:
+  image: catatnight/postfix
+  environment:
+    - smtp_user={your_smtp_user}@{your_domain}:{your_smtp_password}
+    - maildomain=smtp.{your_domain}
+  ports:
+    - "25"
